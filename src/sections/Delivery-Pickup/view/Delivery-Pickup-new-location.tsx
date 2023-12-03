@@ -1,10 +1,14 @@
+/* eslint-disable @typescript-eslint/default-param-last */
+
 'use client';
 
 import React, { useState } from 'react';
+import dynamic from 'next/dynamic';
 // import { TimePicker } from 'material-ui-time-picker';
 // import TimeInput from 'material-ui-time-picker'
 
 // @mui
+import { styled } from '@mui/material/styles';
 import Container from '@mui/material/Container';
 import Grid from '@mui/system/Unstable_Grid/Grid';
 import { Button, TextField, Typography, FormControlLabel, Switch, Card, Dialog, DialogActions, DialogTitle, DialogContent } from '@mui/material';
@@ -15,11 +19,6 @@ import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Checkbox from '@mui/material/Checkbox';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
-
-import clone from "lodash/clone";
-
-import Map, { Marker, Popup } from "react-map-gl";
-import "mapbox-gl/dist/mapbox-gl.css";
 
 
 
@@ -34,6 +33,34 @@ import DetailsNavBar from 'src/sections/orders/DetailsNavBar';
 import Linker from 'src/sections/overview/subscription-plan/link';
 import { paths } from 'src/routes/paths';
 import { TimePicker } from '@mui/x-date-pickers';
+import { MAPBOX_API } from 'src/config-global';
+
+
+
+const MapDraggableMarkers = dynamic(() => import('../../_examples/extra/map-view/draggable-markers'));
+const THEMES = {
+  streets: 'mapbox://styles/mapbox/streets-v11',
+  outdoors: 'mapbox://styles/mapbox/outdoors-v11',
+  light: 'mapbox://styles/mapbox/light-v10',
+  dark: 'mapbox://styles/mapbox/dark-v10',
+  satellite: 'mapbox://styles/mapbox/satellite-v9',
+  satelliteStreets: 'mapbox://styles/mapbox/satellite-streets-v11',
+};
+const baseSettings = {
+  mapboxAccessToken: MAPBOX_API,
+  minZoom: 1,
+};
+
+const StyledMapContainer = styled('div')(({ theme }) => ({
+  zIndex: 0,
+  height: 250,
+  overflow: 'hidden',
+  position: 'relative',
+  borderRadius: theme.shape.borderRadius,
+  '& .mapboxgl-ctrl-logo, .mapboxgl-ctrl-bottom-right': {
+    display: 'none',
+  },
+}));
 
 
 //
@@ -81,6 +108,80 @@ export default function AccountView() {
   const [currency, setCurrency] = React.useState("Default Currency");
 
 
+
+  const [workingHours, setWorkingHours] = useState<any>([
+    {
+      day: "satuday",
+      status: false,
+      start: "",
+      end: ""
+    },
+    {
+      day: "sunday",
+      status: false,
+      start: "",
+      end: ""
+    },
+    {
+      day: "monday",
+      status: false,
+      start: "",
+      end: ""
+    },
+    {
+      day: "tuesday",
+      status: false,
+      start: "",
+      end: ""
+    },
+    {
+      day: "webnesday",
+      status: false,
+      start: "",
+      end: ""
+    },
+    {
+      day: "thursday",
+      status: false,
+      start: "",
+      end: ""
+    },
+    {
+      day: "friday",
+      status: false,
+      start: "",
+      end: ""
+    },
+  ]);
+
+
+  const updateWorkingHours = (index: any = null, newData: any) => {
+    setWorkingHours((prev: any) => (
+      prev.map((obj: any, indx: any) => indx === index ? newData : obj)
+    )
+    );
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  // ----------------------------------------------------------------------------------
   const handleChangeSection = (newValue: string) => (event: React.SyntheticEvent | React.MouseEvent) => {
     setActiveSection(newValue);
   };
@@ -304,7 +405,12 @@ export default function AccountView() {
           </Stack>
           <Grid container alignItems='center' rowSpacing="20px" columnSpacing="20px" sx={{ mt: '20px' }}>
             <Grid xs={12}>
-              <Box sx={{ minHeight: '150px', backgroundColor: '#CFCFCF', borderRadius: '16px' }} />
+              {/* <Box sx={{ minHeight: '150px', backgroundColor: '#CFCFCF', borderRadius: '16px' }} /> */}
+              <Box sx={{ minHeight: '150px', borderRadius: '16px' }} >
+                <StyledMapContainer>
+                  <MapDraggableMarkers {...baseSettings} mapStyle={THEMES.light} />
+                </StyledMapContainer>
+              </Box>
             </Grid>
 
             <Grid xs={12} md={6}>
@@ -388,107 +494,36 @@ export default function AccountView() {
           </Typography>
           <Grid container alignItems='center' rowSpacing="25px" columnSpacing="5px" sx={{ mt: '20px' }}>
 
-            <Grid xs={12}>
-              <FormControlLabel
-                label={<Typography sx={{ fontWeight: 900 }}>
-                  Saturday <Typography component="sup" style={{ fontWeight: 400, fontSize: '11px' }} >(Available)</Typography>
-                </Typography>}
-                control={<Checkbox size='medium' defaultChecked />} />
-              <Box>
-                <Stack direction='row' alignItems='center' spacing='20px' >
-                  <Stack direction='row' justifyContent='space-between' spacing='10px' >
-                    <Typography component='p' variant="subtitle2" color='#8688A3'> From </Typography>
-                    <Typography component='p' variant="subtitle2" sx={{ display: 'flex', alignItems: 'center', fontWeight: 900 }}> 09:00 PM  <Iconify icon="material-symbols:keyboard-arrow-down-rounded" /> </Typography>
-                  </Stack>
-                  <Stack direction='row' justifyContent='space-between' spacing='10px' >
-                    <Typography component='p' variant="subtitle2" color='#8688A3'> To </Typography>
-                    <Typography component='p' variant="subtitle2" sx={{ display: 'flex', alignItems: 'center', fontWeight: 900 }}> 12:00 AM  <Iconify icon="material-symbols:keyboard-arrow-down-rounded" /> </Typography>
-                  </Stack>
-                </Stack>
-              </Box>
-            </Grid>
+            {workingHours.map((dataObj: any, index: any) => (
+              <Grid xs={12} key={index} >
+                <FormControlLabel
+                  label={<Typography sx={{ fontWeight: 900, color: dataObj.status ? 'white' : '#8688A3' }}>
+                    {`${String(dataObj?.day).toUpperCase()}`} <Typography component="sup" style={{ fontWeight: 400, fontSize: '11px' }} >{dataObj.status ? "(Available)" : "(Not Available)"}</Typography>
+                  </Typography>}
+                  control={<Checkbox size='medium' onChange={() => updateWorkingHours(index, { ...dataObj, status: !dataObj.status })} checked={!!dataObj.status} />} />
+                {dataObj.status && (
+                  <Box>
+                    <Stack direction='row' alignItems='center' spacing='20px' >
+                      <Stack direction='row' justifyContent='space-between' spacing='10px' >
+                        <Typography component='p' variant="subtitle2" color='#8688A3'> From </Typography>
+                        <Typography component='p' variant="subtitle2" sx={{ display: 'flex', alignItems: 'center', fontWeight: 900 }}> 09:00 PM  <Iconify icon="material-symbols:keyboard-arrow-down-rounded" /> </Typography>
+                      </Stack>
+                      <Stack direction='row' justifyContent='space-between' spacing='10px' >
+                        <Typography component='p' variant="subtitle2" color='#8688A3'> To </Typography>
+                        {/* <Button
+                          onClick={() => setOpenTime({ open: true })}
+                        >
+                          Open time picker
+                        </Button> */}
+                        <Typography component='p' variant="subtitle2" sx={{ display: 'flex', alignItems: 'center', fontWeight: 900 }}> 12:00 AM  <Iconify icon="material-symbols:keyboard-arrow-down-rounded" /> </Typography>
+                      </Stack>
+                    </Stack>
+                  </Box>
 
-            <Grid xs={12}>
-              <FormControlLabel
-                label={<Typography sx={{ fontWeight: 900 }}>
-                  Sunday <Typography component="sup" style={{ fontWeight: 400, fontSize: '11px' }} >(Available)</Typography>
-                </Typography>}
-                control={<Checkbox size='medium' defaultChecked />} />
-              <Box>
-                <Stack direction='row' alignItems='center' spacing='20px' >
-                  <Stack direction='row' justifyContent='space-between' spacing='10px' >
-                    <Typography component='p' variant="subtitle2" color='#8688A3'> From </Typography>
-                    {/* <Typography component='p' variant="subtitle2" sx={{ display: 'flex', alignItems: 'center', fontWeight: 900 }}> 09:00 PM  <Iconify icon="material-symbols:keyboard-arrow-down-rounded" /> </Typography> */}
-                    <Typography component='p' variant="subtitle2" sx={{ display: 'flex', alignItems: 'center', fontWeight: 900 }}> 09:00 PM  <Iconify icon="material-symbols:keyboard-arrow-down-rounded" /> </Typography>
-                    <Button
-                      onClick={() => setOpenTime({ open: true })}
-                    >
-                      Open time picker
-                    </Button>
-                  </Stack>
-                  <Stack direction='row' justifyContent='space-between' spacing='10px' >
-                    <Typography component='p' variant="subtitle2" color='#8688A3'> To </Typography>
-                    <Typography component='p' variant="subtitle2" sx={{ display: 'flex', alignItems: 'center', fontWeight: 900 }}> 12:00 AM  <Iconify icon="material-symbols:keyboard-arrow-down-rounded" /> </Typography>
-                  </Stack>
-                </Stack>
-              </Box>
-            </Grid>
+                )}
+              </Grid>
+            ))}
 
-            <Grid xs={12}>
-              <FormControlLabel
-                label={<Typography sx={{ fontWeight: 900 }}>
-                  Monday <Typography component="sup" style={{ fontWeight: 400, fontSize: '11px' }} >(Available)</Typography>
-                </Typography>}
-                control={<Checkbox size='medium' defaultChecked />} />
-              <Box>
-                <Stack direction='row' alignItems='center' spacing='20px' >
-                  <Stack direction='row' justifyContent='space-between' spacing='10px' >
-                    <Typography component='p' variant="subtitle2" color='#8688A3'> From </Typography>
-                    <Typography component='p' variant="subtitle2" sx={{ display: 'flex', alignItems: 'center', fontWeight: 900 }}> 09:00 PM  <Iconify icon="material-symbols:keyboard-arrow-down-rounded" /> </Typography>
-                  </Stack>
-                  <Stack direction='row' justifyContent='space-between' spacing='10px' >
-                    <Typography component='p' variant="subtitle2" color='#8688A3'> To </Typography>
-                    <Typography component='p' variant="subtitle2" sx={{ display: 'flex', alignItems: 'center', fontWeight: 900 }}> 12:00 AM  <Iconify icon="material-symbols:keyboard-arrow-down-rounded" /> </Typography>
-                  </Stack>
-                </Stack>
-              </Box>
-            </Grid>
-
-
-            <Grid xs={12}>
-              <FormControlLabel
-                label={<Typography color='#8688A3' sx={{ fontWeight: 900 }}>
-                  Tuesday <Typography component="sup" style={{ fontWeight: 400, fontSize: '11px' }} >(Not Available)</Typography>
-                </Typography>}
-                control={<Checkbox size='medium' />} />
-            </Grid>
-
-
-            <Grid xs={12}>
-              <FormControlLabel
-                label={<Typography color='#8688A3' sx={{ fontWeight: 900 }}>
-                  Wednesday <Typography component="sup" style={{ fontWeight: 400, fontSize: '11px' }} >(Not Available)</Typography>
-                </Typography>}
-                control={<Checkbox size='medium' />} />
-            </Grid>
-
-
-            <Grid xs={12}>
-              <FormControlLabel
-                label={<Typography color='#8688A3' sx={{ fontWeight: 900 }}>
-                  Thursday <Typography component="sup" style={{ fontWeight: 400, fontSize: '11px' }} >(Not Available)</Typography>
-                </Typography>}
-                control={<Checkbox size='medium' />} />
-            </Grid>
-
-
-            <Grid xs={12}>
-              <FormControlLabel
-                label={<Typography color='#8688A3' sx={{ fontWeight: 900 }}>
-                  Friday <Typography component="sup" style={{ fontWeight: 400, fontSize: '11px' }} >(Not Available)</Typography>
-                </Typography>}
-                control={<Checkbox size='medium' />} />
-            </Grid>
 
           </Grid>
         </Box>
