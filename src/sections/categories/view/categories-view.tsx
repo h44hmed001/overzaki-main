@@ -1,7 +1,6 @@
-/* eslint-disable arrow-body-style */
-/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react/jsx-curly-brace-presence */
 /* eslint-disable @typescript-eslint/no-shadow */
+/* eslint-disable react-hooks/exhaustive-deps */
 
 'use client';
 
@@ -62,7 +61,8 @@ export default function CategoriesView() {
 
   const loadStatus = useSelector((state: any) => state.category.status);
   const { list, subCatList, error, category, subCategory } = useSelector((state: any) => state.category);
-
+  // const { list, error, category, subCategory } = useSelector((state: any) => state.category);
+  // const subCatList = [];
   const [categoriesData, setCategoriesData] = useState<any>(null);
   const [subCategoriesData, setSubCategoriesData] = useState<any>(null);
 
@@ -112,10 +112,10 @@ export default function CategoriesView() {
       } else {
         await handleCreateCategory();
       }
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      console.error(err);
       reset();
-      setErrorMsg(typeof error === 'string' ? error : error.message);
+      setErrorMsg(typeof err === 'string' ? err : err.message);
     }
   });
 
@@ -126,10 +126,10 @@ export default function CategoriesView() {
       } else {
         await handleCreateSubCategory();
       }
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      console.error(err);
       subCatMethods.reset();
-      setErrorMsg(typeof error === 'string' ? error : error.message);
+      setErrorMsg(typeof err === 'string' ? err : err.message);
     }
   });
 
@@ -171,18 +171,34 @@ export default function CategoriesView() {
 
 
   useEffect(() => {
+
     if (subCategory && Object.entries(subCategory).length > 0) {
-      setSubCategoriesData(subCategory);
+      const newSubCategoryObj = {
+        name: {},
+        category: "",
+        image: ""
+      }
       Object.entries(subCategory).forEach(([fieldName, nestedData]: any) => {
         if (fieldName === 'name') {
           Object.entries(nestedData).forEach(([nestedFieldName, value]: any) => {
             const fullFieldName: string = `${fieldName}.${nestedFieldName}`;
-            subCatMethods.setValue(fullFieldName as "name.en" | "name.ar", value);
+            if (nestedFieldName === 'en' || nestedFieldName === 'ar') {
+              newSubCategoryObj.name = {
+                ...newSubCategoryObj?.name,
+                [nestedFieldName]: value
+              };
+              subCatMethods.setValue(fullFieldName as "name.en" | "name.ar", value);
+            }
           });
         } else if (fieldName === 'category') {
-          subCatMethods.setValue(fieldName, nestedData);
+          subCatMethods.setValue(fieldName, nestedData._id);
+          newSubCategoryObj.category = nestedData._id;
+        } else if (fieldName === 'image') {
+          newSubCategoryObj.image = nestedData;
         }
       });
+
+      setSubCategoriesData(newSubCategoryObj);
     } else {
       setSubCategoriesData(null);
       subCatMethods.reset();
@@ -196,7 +212,6 @@ export default function CategoriesView() {
 
   const handleCreateCategory = () => {
     const FormValues: any = new FormData();
-    console.log(categoriesData);
     Object.keys(categoriesData.name).forEach((key) => {
       const value = categoriesData.name[key];
       FormValues.append(`name[${key}]`, value);
@@ -262,9 +277,7 @@ export default function CategoriesView() {
   // ---------------------------------------------Sub Categories--------------------------------------------
 
   const handleCreateSubCategory = () => {
-    console.log(subCategoriesData);
     const FormValues: any = new FormData();
-    console.log(subCategoriesData);
     Object.keys(subCategoriesData.name).forEach((key) => {
       const value = subCategoriesData.name[key];
       FormValues.append(`name[${key}]`, value);
@@ -286,7 +299,6 @@ export default function CategoriesView() {
     });
   }
   const handleEditSubCategory = () => {
-    console.log(subCategoriesData);
 
     const FormValues: any = new FormData();
     Object.keys(subCategoriesData.name).forEach((key) => {
@@ -549,60 +561,53 @@ export default function CategoriesView() {
             </BottomActions>
           </Grid>
 
-          {list?.length > 0 && (
-            <Grid item xs={12} container spacing={2}>
-              {
-                list.map((cat: any, indx: any) => {
-                  const subCat = subCatList.filter((item: any) => item.category === cat._id);
-                  return (
-                    <React.Fragment key={indx}>
-                      <Grid item xs={12} sx={{ mt: '20px' }}>
-                        <Typography component='p' variant="subtitle2" sx={{ fontSize: '1rem', fontWeight: 800 }} > {cat.name || cat?.name?.en} </Typography>
-                        <Typography component='p' noWrap variant="subtitle2" sx={{ opacity: 0.7, fontSize: '.9rem', maxWidth: { xs: '120px', md: '218px' } }} >
-                          {subCat.length} subcategories
-                        </Typography>
+          {list?.length > 0 && <Grid item xs={12} container spacing={2}>
+            {
+              list.map((cat: any, indx: any) => {
+                const subCat = subCatList.filter((item: any) => item.category === cat._id);
+                return <React.Fragment key={indx}>
+                  <Grid item xs={12} sx={{ mt: '20px' }}>
+                    <Typography component='p' variant="subtitle2" sx={{ fontSize: '1rem', fontWeight: 800 }} > {cat?.name?.en || cat?.name || ""} </Typography>
+                    <Typography component='p' noWrap variant="subtitle2" sx={{ opacity: 0.7, fontSize: '.9rem', maxWidth: { xs: '120px', md: '218px' } }} >
+                      {subCat.length} subcategories
+                    </Typography>
+                  </Grid>
+                  {subCat.map((subCatObject: any, index: any) => <Grid key={index} item xs={12}>
+                    <Paper elevation={4} sx={{ border: '2px solid #FFFFFF', '&:hover': { border: '2px solid #1BFCB6' } }}>
+                      <Grid container item alignItems='center' justifyContent='space-between' rowGap={3} sx={{ px: 3, py: { xs: 1.5 } }}>
+                        <Grid item xs='auto' >
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '15px'
+                            }}
+                          >
+                            <Iconify icon="ci:drag-vertical" />
+                            <Box component='img' src={subCatObject.image} alt=" " width='60px' />
+                            <Box display='flex' gap='0px' flexDirection='column' >
+                              <Typography component='p' variant="subtitle2" sx={{ fontSize: '.9rem', fontWeight: 800 }} > {subCatObject?.name?.en || subCatObject?.name} </Typography>
+                              <Typography component='p' noWrap variant="subtitle2" sx={{ opacity: 0.7, fontSize: '.9rem', maxWidth: { xs: '120px', md: '218px' } }} >
+                                {0} subcategories -   {0} products
+                              </Typography>
+                            </Box>
+                          </Box>
+                        </Grid>
+                        <Grid item xs='auto' textAlign='right'>
+                          <Iconify icon="carbon:delete" onClick={() => {
+                            setRemoveData({ type: 'subcategory', id: subCatObject._id });
+                            confirm.onTrue();
+                          }} /> &nbsp; &nbsp; &nbsp;
+                          <Iconify icon="bx:edit" onClick={toggleDrawerCommon('sub', subCatObject._id)} />
+                        </Grid>
                       </Grid>
-                      {subCat.map((subCatObject: any, index: any) => <Grid key={index} item xs={12}>
-                        <Paper elevation={4} sx={{ border: '2px solid #FFFFFF', '&:hover': { border: '2px solid #1BFCB6' } }}>
-                          <Grid container item alignItems='center' justifyContent='space-between' rowGap={3} sx={{ px: 3, py: { xs: 1.5 } }}>
-                            <Grid item xs='auto' >
-                              <Box
-                                sx={{
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: '15px'
-                                }}
-                              >
-                                <Iconify icon="ci:drag-vertical" />
-                                <Box component='img' src={subCatObject.image} alt=" " width='60px' />
-                                <Box display='flex' gap='0px' flexDirection='column' >
-                                  <Typography component='p' variant="subtitle2" sx={{ fontSize: '.9rem', fontWeight: 800 }} > {subCatObject.name || subCatObject?.name?.en} </Typography>
-                                  <Typography component='p' noWrap variant="subtitle2" sx={{ opacity: 0.7, fontSize: '.9rem', maxWidth: { xs: '120px', md: '218px' } }} >
-                                    {0} subcategories -   {0} products
-                                  </Typography>
-                                </Box>
-                              </Box>
-                            </Grid>
-
-                            <Grid item xs='auto' textAlign='right'>
-                              <Iconify icon="carbon:delete" onClick={() => {
-                                setRemoveData({ type: 'subcategory', id: subCatObject._id });
-                                confirm.onTrue();
-                              }} /> &nbsp; &nbsp; &nbsp;
-                              <Iconify icon="bx:edit" onClick={toggleDrawerCommon('sub', subCatObject._id)} />
-                            </Grid>
-
-
-
-                          </Grid>
-                        </Paper>
-                      </Grid>)}
-                    </React.Fragment>
-                  )
-                }
-                )}
-            </Grid>
-          )}
+                    </Paper>
+                  </Grid>)}
+                </React.Fragment>
+              }
+              )}
+          </Grid>
+          }
         </>}
       </Grid >
 
@@ -747,10 +752,10 @@ export default function CategoriesView() {
               fullWidth
               variant='filled'
               name='category'
-              value={subCategoriesData?.category || null}
+              value={subCategoriesData?.category || ""}
               settingStateValue={handleChangeMySubCat}
             >
-              {list.length > 0 && list.map((item: any, i: any) => <MenuItem key={i} value={item._id}>{item.name || ""}</MenuItem>)}
+              {list.length > 0 && list.map((item: any, i: any) => <MenuItem key={i} value={item._id}>{item?.name?.en || item?.name || ""}</MenuItem>)}
             </RHFSelect>
 
             <Typography my='20px' component='p' noWrap variant="subtitle2" sx={{ opacity: 0.7, fontSize: '.9rem', maxWidth: { xs: '120px', md: '218px' } }} >

@@ -195,7 +195,7 @@ export default function OrdersListView() {
         // setProductList(response.data.data)
       });
     } else {
-      setProductList(productsState.list.map((item: any) => ({ value: item._id, label: item.name.en || item.name })))
+      setProductList(productsState.list.map((item: any) => ({ value: item._id, label: item?.name?.en || item?.name })))
     }
   }, [productsState, dispatch]);
 
@@ -220,7 +220,8 @@ export default function OrdersListView() {
 
         const updatedData = {
           name: {
-            en: voucher?.name?.en || voucher?.name
+            en: voucher?.name?.en || voucher?.name,
+            ar: voucher?.name?.ar || voucher?.name
           },
           code: voucher?.code,
           status: voucher?.status,
@@ -239,6 +240,7 @@ export default function OrdersListView() {
         Object.entries(updatedData).forEach(([fieldName, value]: any) => {
           if (fieldName === 'name') {
             methods.setValue('name.en', value.en);
+            methods.setValue('name.ar', value.ar);
           } else {
             methods.setValue(fieldName, value);
           }
@@ -544,7 +546,7 @@ export default function OrdersListView() {
 
                         <Grid item xs={6} md='auto'>
                           <Box sx={{ minWidth: { xs: 'auto', md: '140px' } }}>
-                            <Typography component='p' color='#8688A3' variant="subtitle2" sx={{ fontSize: '.8rem' }} >{voucher.name || voucher.name.en}</Typography>
+                            <Typography component='p' color='#8688A3' variant="subtitle2" sx={{ fontSize: '.8rem' }} >{voucher?.name?.en || voucher?.name}</Typography>
                             {
                               voucher.status ?
                                 <Typography component='p' color='#0D6EFD' variant="subtitle2" sx={{ mt: '5px', fontWeight: 900, cursor: 'pointer', fontSize: '.8rem', display: 'flex', alignItems: 'center', gap: '8px' }} onClick={() => onCopy(voucher.code)} >{voucher.code} <Iconify icon="tabler:copy" />  </Typography>

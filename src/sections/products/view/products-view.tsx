@@ -153,16 +153,16 @@ export default function OrdersListView() {
     if (product && Object.entries(product).length > 0) {
       const newProduct = {
         name: {
-          en: product.name,
-          ar: "",
+          en: product.name.en,
+          ar: product.name.ar,
         },
         categoryId: product.categoryId,
         subCategory: product.subCategory,
         price: product.price,
         images: product.images,
         description: {
-          en: product.description,
-          ar: "",
+          en: product.description.en,
+          ar: product.description.ar,
         },
         quantity: product.quantity,
         publish_app: product.publish_app,
@@ -394,8 +394,6 @@ export default function OrdersListView() {
       ar: Yup.string().required('Arabic Name is required'),
     }),
     selectionType: Yup.string().required('Field is required'),
-    // minimum: Yup.number().required('Field is required'),
-    // maximum: Yup.number().required('Field is required'),
     minimum: Yup.number().test({
       name: 'minimum',
       message: 'Field is required',
@@ -450,7 +448,10 @@ export default function OrdersListView() {
       setEditVariantId(tempVariantId);
       const firstVariant = variant[0];
       const newData = {
-        groupName: firstVariant.groupName,
+        groupName: {
+          en: firstVariant.groupName.en,
+          ar: firstVariant.groupName.ar
+        },
         allowMoreQuantity: firstVariant.allowMoreQuantity,
         maximum: firstVariant?.maximum || 0,
         minimum: firstVariant?.minimum || 0,
@@ -623,7 +624,7 @@ export default function OrdersListView() {
                       key={categoryObj._id}
                       iconPosition="end"
                       value={categoryObj._id}
-                      label={categoryObj.name}
+                      label={categoryObj?.name?.en || ""}
                       icon={
                         <Label
                           variant={
@@ -656,7 +657,7 @@ export default function OrdersListView() {
                             >
                               <Box component='img' src={product.images[0]} alt=" " width='60px' />
                               <Box display='flex' gap='0px' flexDirection='column' >
-                                <Typography component='p' noWrap variant="subtitle2" sx={{ fontSize: '.9rem', fontWeight: 800, maxWidth: { xs: '100%', md: '188px' } }} > {product.name} </Typography>
+                                <Typography component='p' noWrap variant="subtitle2" sx={{ fontSize: '.9rem', fontWeight: 800, maxWidth: { xs: '100%', md: '188px' } }} > {product?.name?.en} </Typography>
                                 <Typography component='p' noWrap variant="subtitle2" sx={{ opacity: 0.7, fontSize: '.9rem', maxWidth: { xs: '100%', md: '188px' } }} >{product.category}</Typography>
                               </Box>
                             </Box>
@@ -827,7 +828,7 @@ export default function OrdersListView() {
               settingStateValue={handleProductData}
             >
               {categoryState.list.map((cat: any, index: any) => (
-                <MenuItem key={index} value={cat._id}>{cat.name.en || cat.name}</MenuItem>
+                <MenuItem key={index} value={cat._id}>{cat?.name?.en || cat?.name || ""}</MenuItem>
               ))}
             </RHFSelect>
 
@@ -856,7 +857,7 @@ export default function OrdersListView() {
               settingStateValue={handleProductData}
             >
               {productData?.categoryId && categoryState.subCatList.filter((item: any) => item.category === productData.categoryId).map((item: any, ind: any) => (
-                <MenuItem key={ind} value={item._id}>{item.name}</MenuItem>
+                <MenuItem key={ind} value={item._id}>{item?.name?.en || item?.name || ""}</MenuItem>
               ))}
             </RHFSelect>
 

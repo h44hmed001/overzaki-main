@@ -1,10 +1,13 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
+// import { TimePicker } from 'material-ui-time-picker';
+// import TimeInput from 'material-ui-time-picker'
+
 // @mui
 import Container from '@mui/material/Container';
 import Grid from '@mui/system/Unstable_Grid/Grid';
-import { Button, TextField, Typography, FormControlLabel, Switch, Card } from '@mui/material';
+import { Button, TextField, Typography, FormControlLabel, Switch, Card, Dialog, DialogActions, DialogTitle, DialogContent } from '@mui/material';
 import { Stack, Box } from '@mui/system';
 import Divider from '@mui/material/Divider';
 import InputAdornment from '@mui/material/InputAdornment';
@@ -12,6 +15,14 @@ import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Checkbox from '@mui/material/Checkbox';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
+
+import clone from "lodash/clone";
+
+import Map, { Marker, Popup } from "react-map-gl";
+import "mapbox-gl/dist/mapbox-gl.css";
+
+
+
 // routes
 // import { paths } from 'src/routes/paths';
 // components
@@ -22,6 +33,7 @@ import { BottomActions } from 'src/components/bottom-actions';
 import DetailsNavBar from 'src/sections/orders/DetailsNavBar';
 import Linker from 'src/sections/overview/subscription-plan/link';
 import { paths } from 'src/routes/paths';
+import { TimePicker } from '@mui/x-date-pickers';
 
 
 //
@@ -59,6 +71,11 @@ interface DropDownState {
 // ----------------------------------------------------------------------
 
 export default function AccountView() {
+
+  const [openTime, setOpenTime] = useState({ open: false });
+
+
+
   const settings = useSettingsContext();
   const [activeSection, setActiveSection] = React.useState('Location Info');
   const [currency, setCurrency] = React.useState("Default Currency");
@@ -401,7 +418,13 @@ export default function AccountView() {
                 <Stack direction='row' alignItems='center' spacing='20px' >
                   <Stack direction='row' justifyContent='space-between' spacing='10px' >
                     <Typography component='p' variant="subtitle2" color='#8688A3'> From </Typography>
+                    {/* <Typography component='p' variant="subtitle2" sx={{ display: 'flex', alignItems: 'center', fontWeight: 900 }}> 09:00 PM  <Iconify icon="material-symbols:keyboard-arrow-down-rounded" /> </Typography> */}
                     <Typography component='p' variant="subtitle2" sx={{ display: 'flex', alignItems: 'center', fontWeight: 900 }}> 09:00 PM  <Iconify icon="material-symbols:keyboard-arrow-down-rounded" /> </Typography>
+                    <Button
+                      onClick={() => setOpenTime({ open: true })}
+                    >
+                      Open time picker
+                    </Button>
                   </Stack>
                   <Stack direction='row' justifyContent='space-between' spacing='10px' >
                     <Typography component='p' variant="subtitle2" color='#8688A3'> To </Typography>
@@ -670,6 +693,25 @@ export default function AccountView() {
       </Box>
     </DetailsNavBar>
 
+    <Dialog
+      maxWidth='xs'
+      open={openTime?.open}
+    >
+      <DialogTitle>
+        Select Time
+      </DialogTitle>
+      <DialogContent>
+        <TimePicker />
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={() => setOpenTime({ open: false })} color='primary'>
+          Cancel
+        </Button>
+        <Button onClick={() => setOpenTime({ open: false })} color='primary'>
+          Ok
+        </Button>
+      </DialogActions>
+    </Dialog>
   </Box>
   );
 }
