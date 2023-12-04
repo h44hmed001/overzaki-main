@@ -1,3 +1,4 @@
+/* eslint-disable consistent-return */
 /* eslint-disable @typescript-eslint/default-param-last */
 
 'use client';
@@ -107,11 +108,13 @@ export default function AccountView() {
   const [activeSection, setActiveSection] = React.useState('Location Info');
   const [currency, setCurrency] = React.useState("Default Currency");
 
+  const [timerDialogOpen, setTimerDialogOpen] = useState(false);
+  const [timerDialogData, setTimerDialogData] = useState<any>({ index: null, prevData: null, property: null });
 
 
   const [workingHours, setWorkingHours] = useState<any>([
     {
-      day: "satuday",
+      day: "saturday",
       status: false,
       start: "",
       end: ""
@@ -135,7 +138,7 @@ export default function AccountView() {
       end: ""
     },
     {
-      day: "webnesday",
+      day: "wednesday",
       status: false,
       start: "",
       end: ""
@@ -156,10 +159,12 @@ export default function AccountView() {
 
 
   const updateWorkingHours = (index: any = null, newData: any) => {
+    console.log("index", index);
+    console.log("newData", newData);
+
     setWorkingHours((prev: any) => (
       prev.map((obj: any, indx: any) => indx === index ? newData : obj)
-    )
-    );
+    ));
   }
 
 
@@ -217,6 +222,20 @@ export default function AccountView() {
         (event as React.KeyboardEvent).key === 'Shift')
     ) { return; }
     if (state === "new") setOpenDetails(false)
+  };
+
+
+  const openModal = (index: any, prevData: any, property: any) => {
+    if (index && prevData) {
+      setTimerDialogData({ index, prevData, property });
+      setTimerDialogOpen(true);
+      // console.log("funcation called");
+      // return <ShowTimerDialog index={index} prevData={prevData} property={property} updateWorkingHours={updateWorkingHours} />
+    }
+  }
+  const closeTimerDialog = () => {
+    setTimerDialogOpen(false);
+    setTimerDialogData({ index: null, prevData: null, property: null })
   };
 
 
@@ -497,7 +516,7 @@ export default function AccountView() {
             {workingHours.map((dataObj: any, index: any) => (
               <Grid xs={12} key={index} >
                 <FormControlLabel
-                  label={<Typography sx={{ fontWeight: 900, color: dataObj.status ? 'white' : '#8688A3' }}>
+                  label={<Typography sx={{ fontWeight: 900, color: dataObj.status ? 'auto' : '#8688A3' }}>
                     {`${String(dataObj?.day).toUpperCase()}`} <Typography component="sup" style={{ fontWeight: 400, fontSize: '11px' }} >{dataObj.status ? "(Available)" : "(Not Available)"}</Typography>
                   </Typography>}
                   control={<Checkbox size='medium' onChange={() => updateWorkingHours(index, { ...dataObj, status: !dataObj.status })} checked={!!dataObj.status} />} />
@@ -506,16 +525,22 @@ export default function AccountView() {
                     <Stack direction='row' alignItems='center' spacing='20px' >
                       <Stack direction='row' justifyContent='space-between' spacing='10px' >
                         <Typography component='p' variant="subtitle2" color='#8688A3'> From </Typography>
-                        <Typography component='p' variant="subtitle2" sx={{ display: 'flex', alignItems: 'center', fontWeight: 900 }}> 09:00 PM  <Iconify icon="material-symbols:keyboard-arrow-down-rounded" /> </Typography>
+                        <Typography component='p' variant="subtitle2" sx={{ display: 'flex', alignItems: 'center', fontWeight: 900 }}
+                          onClick={() => {
+                            setTimerDialogData({ index, prevData: dataObj, property: 'start' } as any);
+                            setTimerDialogOpen(true);
+                          }}
+                        >
+                          {dataObj.start || "hh:mm A"} <Iconify icon="material-symbols:keyboard-arrow-down-rounded" /> </Typography>
                       </Stack>
                       <Stack direction='row' justifyContent='space-between' spacing='10px' >
                         <Typography component='p' variant="subtitle2" color='#8688A3'> To </Typography>
-                        {/* <Button
-                          onClick={() => setOpenTime({ open: true })}
-                        >
-                          Open time picker
-                        </Button> */}
-                        <Typography component='p' variant="subtitle2" sx={{ display: 'flex', alignItems: 'center', fontWeight: 900 }}> 12:00 AM  <Iconify icon="material-symbols:keyboard-arrow-down-rounded" /> </Typography>
+                        <Typography component='p' variant="subtitle2" sx={{ display: 'flex', alignItems: 'center', fontWeight: 900 }}
+                          onClick={() => {
+                            setTimerDialogData({ index, prevData: dataObj, property: 'end' } as any);
+                            setTimerDialogOpen(true);
+                          }}
+                        > {dataObj.end || "hh:mm A"}  <Iconify icon="material-symbols:keyboard-arrow-down-rounded" /> </Typography>
                       </Stack>
                     </Stack>
                   </Box>
@@ -528,97 +553,99 @@ export default function AccountView() {
           </Grid>
         </Box>
       </Box>}
-      {activeSection === "Delivery Zones" && <Box>
-        <Box sx={{ maxWidth: '700px', width: '100%' }}>
-          <Typography variant='h5' component='h5' mb='30px'>
-            Delivery Zones
-          </Typography>
+      {
+        activeSection === "Delivery Zones" && <Box>
+          <Box sx={{ maxWidth: '700px', width: '100%' }}>
+            <Typography variant='h5' component='h5' mb='30px'>
+              Delivery Zones
+            </Typography>
 
-          <Grid container alignItems='center' rowSpacing="20px" columnSpacing="20px" sx={{ mt: '20px' }}>
-            <Grid xs={12}>
-              <Box sx={{ minHeight: '150px', backgroundColor: '#CFCFCF', borderRadius: '16px' }} />
-            </Grid>
+            <Grid container alignItems='center' rowSpacing="20px" columnSpacing="20px" sx={{ mt: '20px' }}>
+              <Grid xs={12}>
+                <Box sx={{ minHeight: '150px', backgroundColor: '#CFCFCF', borderRadius: '16px' }} />
+              </Grid>
 
-            <Grid xs={12}>
-              <Stack direction='row' alignItems='center' justifyContent='space-between'>
-                <Typography variant='h6' sx={{ fontSize: '1rem' }} >
-                  3 Delivery Zones
-                </Typography>
-                <Box sx={{ minWidth: '100px' }}>
-                  <Button fullWidth onClick={toggleDrawerCommon('new')} startIcon={<Iconify icon="mingcute:add-fill" />} sx={{ borderRadius: '30px', color: '#0F1349', boxShadow: '0px 6px 20px #1BFCB633' }} component='h5' variant='contained' color='primary'  >
-                    Add
-                  </Button>
-                </Box>
-              </Stack>
-            </Grid>
+              <Grid xs={12}>
+                <Stack direction='row' alignItems='center' justifyContent='space-between'>
+                  <Typography variant='h6' sx={{ fontSize: '1rem' }} >
+                    3 Delivery Zones
+                  </Typography>
+                  <Box sx={{ minWidth: '100px' }}>
+                    <Button fullWidth onClick={toggleDrawerCommon('new')} startIcon={<Iconify icon="mingcute:add-fill" />} sx={{ borderRadius: '30px', color: '#0F1349', boxShadow: '0px 6px 20px #1BFCB633' }} component='h5' variant='contained' color='primary'  >
+                      Add
+                    </Button>
+                  </Box>
+                </Stack>
+              </Grid>
 
-            {
-              data.map((location, indx) => (<Grid xs={12}>
-                <Box
-                  component={Card}
-                  key={indx}
-                  sx={{
-                    p: '23px',
-                    boxShadow: '0px 4px 20px #0F134914',
-                    borderRadius: '16px'
-                  }}
-                >
-                  <Stack direction='row' alignItems='center' justifyContent='space-between'>
-                    <Typography variant='h6' sx={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                      <Iconify icon="carbon:location-filled" />
-                      <span>{location.name}</span>
-                    </Typography>
+              {
+                data.map((location, indx) => (<Grid xs={12}>
+                  <Box
+                    component={Card}
+                    key={indx}
+                    sx={{
+                      p: '23px',
+                      boxShadow: '0px 4px 20px #0F134914',
+                      borderRadius: '16px'
+                    }}
+                  >
+                    <Stack direction='row' alignItems='center' justifyContent='space-between'>
+                      <Typography variant='h6' sx={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                        <Iconify icon="carbon:location-filled" />
+                        <span>{location.name}</span>
+                      </Typography>
 
-                    <Stack direction='row' alignItems='center' columnGap='15px'>
-                      <Box sx={{
-                        height: '36px',
-                        width: '36px',
-                        borderRadius: '20px',
-                        backgroundColor: 'rgb(134, 136, 163,.09)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                      }}>
-                        <Iconify icon="ic:round-edit" />
-                      </Box>
-                      <Box sx={{
-                        height: '36px',
-                        width: '36px',
-                        borderRadius: '20px',
-                        backgroundColor: 'rgb(134, 136, 163,.09)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                      }}>
-                        <Iconify icon="uiw:delete" />
-                      </Box>
-                      <Switch color='primary' checked={location.active} />
+                      <Stack direction='row' alignItems='center' columnGap='15px'>
+                        <Box sx={{
+                          height: '36px',
+                          width: '36px',
+                          borderRadius: '20px',
+                          backgroundColor: 'rgb(134, 136, 163,.09)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}>
+                          <Iconify icon="ic:round-edit" />
+                        </Box>
+                        <Box sx={{
+                          height: '36px',
+                          width: '36px',
+                          borderRadius: '20px',
+                          backgroundColor: 'rgb(134, 136, 163,.09)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}>
+                          <Iconify icon="uiw:delete" />
+                        </Box>
+                        <Switch color='primary' checked={location.active} />
+                      </Stack>
                     </Stack>
-                  </Stack>
-                  <Stack mt='10px' direction='row' alignItems='center' justifyContent='space-between'>
-                    <Typography variant='body2' color='#8688A3' sx={{ fontWeight: 500 }}>  Delivery Fees  </Typography>
-                    <Typography variant='body2' sx={{ fontWeight: 700 }}>  {location.deliveryFee} KWD  </Typography>
-                  </Stack>
-                  <Stack direction='row' alignItems='center' justifyContent='space-between'>
-                    <Typography variant='body2' color='#8688A3' sx={{ fontWeight: 500 }}>  Minimum Order  </Typography>
-                    <Typography variant='body2' sx={{ fontWeight: 700 }}>  {location.minOrders} KWD  </Typography>
-                  </Stack>
-                  <Stack direction='row' alignItems='center' justifyContent='space-between'>
-                    <Typography variant='body2' color='#8688A3' sx={{ fontWeight: 500 }}>  Delivery Time  </Typography>
-                    <Typography variant='body2' sx={{ fontWeight: 700 }}>  {location.deliveryTime} mins  </Typography>
-                  </Stack>
-                </Box>
-              </Grid>))
-            }
+                    <Stack mt='10px' direction='row' alignItems='center' justifyContent='space-between'>
+                      <Typography variant='body2' color='#8688A3' sx={{ fontWeight: 500 }}>  Delivery Fees  </Typography>
+                      <Typography variant='body2' sx={{ fontWeight: 700 }}>  {location.deliveryFee} KWD  </Typography>
+                    </Stack>
+                    <Stack direction='row' alignItems='center' justifyContent='space-between'>
+                      <Typography variant='body2' color='#8688A3' sx={{ fontWeight: 500 }}>  Minimum Order  </Typography>
+                      <Typography variant='body2' sx={{ fontWeight: 700 }}>  {location.minOrders} KWD  </Typography>
+                    </Stack>
+                    <Stack direction='row' alignItems='center' justifyContent='space-between'>
+                      <Typography variant='body2' color='#8688A3' sx={{ fontWeight: 500 }}>  Delivery Time  </Typography>
+                      <Typography variant='body2' sx={{ fontWeight: 700 }}>  {location.deliveryTime} mins  </Typography>
+                    </Stack>
+                  </Box>
+                </Grid>))
+              }
 
 
 
 
-          </Grid>
+            </Grid>
+          </Box>
+
         </Box>
-
-      </Box>}
-    </Container>
+      }
+    </Container >
 
 
     <DetailsNavBar
@@ -728,25 +755,55 @@ export default function AccountView() {
       </Box>
     </DetailsNavBar>
 
-    <Dialog
-      maxWidth='xs'
-      open={openTime?.open}
-    >
-      <DialogTitle>
-        Select Time
-      </DialogTitle>
+
+    {
+      timerDialogOpen && (
+        <ShowTimerDialog
+          index={timerDialogData.index}
+          prevData={timerDialogData.prevData}
+          property={timerDialogData.property}
+          updateWorkingHours={updateWorkingHours}
+          closeDialog={closeTimerDialog}
+        />
+      )
+    }
+
+
+  </Box >
+  );
+}
+const ShowTimerDialog = ({ index, prevData, property, updateWorkingHours, closeDialog }: any) => {
+  const [selectedTime, setSelectedTime] = useState<any>(prevData[property] || "");
+  const [openTime, setOpenTime] = useState(true);
+
+  console.log(prevData[property]);
+  console.log("selectedTime", selectedTime);
+
+
+  return (
+    <Dialog maxWidth="xs" open={openTime}>
+      <DialogTitle>Select Time</DialogTitle>
       <DialogContent>
-        <TimePicker />
+        <TimePicker
+          value={selectedTime}
+          onChange={(e) => setSelectedTime(e)}
+        />
       </DialogContent>
       <DialogActions>
-        <Button onClick={() => setOpenTime({ open: false })} color='primary'>
+        {/* <Button onClick={() => setOpenTime(false)} color="primary"> */}
+        <Button onClick={closeDialog} color="primary">
           Cancel
         </Button>
-        <Button onClick={() => setOpenTime({ open: false })} color='primary'>
+        <Button
+          onClick={() => {
+            updateWorkingHours(index, { ...prevData, [property]: selectedTime !== "" ? selectedTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "" });
+            closeDialog();
+          }}
+          color="primary"
+        >
           Ok
         </Button>
       </DialogActions>
     </Dialog>
-  </Box>
   );
-}
+};
