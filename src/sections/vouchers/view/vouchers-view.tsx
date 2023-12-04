@@ -72,7 +72,7 @@ import VouchersToolbar from '../vouchers-toolbar';
 import VouchersFiltersResult from '../vouchers-filters-result';
 import DetailsNavBar from '../DetailsNavBar';
 import { DragDropContext, Draggable, Droppable } from '@hello-pangea/dnd';
-
+// .....
 // ----------------------------------------------------------------------
 const activeTab = {
   color: '#0F1349',
