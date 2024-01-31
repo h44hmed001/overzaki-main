@@ -9,6 +9,7 @@ import ordersReducer from './thunks/defaultOrders';
 import paymentMethodReducer from './thunks/paymentMethods';
 import builderReducer from './thunks/builder';
 import analyticsReducer from './thunks/analytics';
+import brandsReducer from './thunks/brand';
 import { api } from './services/api';
 
 const rootReducer = combineReducers({
@@ -22,6 +23,7 @@ const rootReducer = combineReducers({
   roles: rolesReducer,
   builder: builderReducer,
   analytics: analyticsReducer,
+  brands: brandsReducer,
   [api.reducerPath]: api.reducer,
 });
 
